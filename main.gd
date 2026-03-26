@@ -1,5 +1,6 @@
 extends Control
 
+var deck_manager := DeckManager.new()
 var deck: Array = []
 var player_hand: Array = []
 
@@ -17,10 +18,17 @@ func add_card_to_player():
 			player_hand.append(deck.pop_back())
 
 func _ready() -> void:
-	deck = create_deck()
+	deck = deck_manager.create_deck()
 	deck.shuffle()
+	deal_initial_hand()
 	update_ui()
 
+func deal_initial_hand():
+	player_hand.clear()
+	for i in range(4):
+		if not deck.is_empty():
+			player_hand.append(deck.pop_back())
+			 
 func create_deck() -> Array:
 	var new_deck: Array = []
 
@@ -59,14 +67,11 @@ func format_card(card: Dictionary) -> String:
 
 	return str(card["rank"]) + " of " + str(card["suit"])
 
-func update_ui() -> void:
-	deck_count_label.text = "Deck Count: " + str(deck.size())
-	cards_left_label.text = "Cards Left: " + str(deck.size())
-	hand_deck_label.text = str(player_hand)
-
-	if deck.is_empty():
-		draw_button.disabled = true
-		drawn_card_label.text = "Drawn Card: Deck is empty"
+func update_ui():
+	var hand_text = ""
+	for card in player_hand:
+		hand_text += deck_manager.format_card(card) + "\n"
+	$HandDeckLabel.text = hand_text
 
 func _on_draw_button_pressed() -> void:
 	var card = draw_card()
